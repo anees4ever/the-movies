@@ -112,7 +112,7 @@ class MovieDetailsModel {
   factory MovieDetailsModel.fromMap(Map<String, dynamic> map) {
     return MovieDetailsModel(
       adult: map['adult'],
-      backdropPath: map['backdrop_path'],
+      backdropPath: map['backdrop_path'] ?? "",
       belongsToCollection: map['belongs_to_collection'] == null
           ? {}
           : Map<String, dynamic>.from(map['belongs_to_collection']),
@@ -124,12 +124,12 @@ class MovieDetailsModel {
       ),
       homepage: map['homepage'],
       id: map['id'],
-      imdbId: map['imdb_id'],
+      imdbId: map['imdb_id'] ?? "",
       originalLanguage: map['original_language'],
       originalTitle: map['original_title'],
       overview: map['overview'],
       popularity: map['popularity'],
-      posterPath: map['poster_path'],
+      posterPath: map['poster_path'] ?? "",
       productionCompanies: map['production_companies'] == null
           ? []
           : List<Map<String, dynamic>>.from(

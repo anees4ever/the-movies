@@ -24,6 +24,12 @@ const upcomingMovieNameStyle = TextStyle(
   fontSize: 18,
 );
 
+const searchMovieNameStyle = TextStyle(
+  color: textColor,
+  fontWeight: FontWeight.bold,
+  fontSize: 20,
+);
+
 const navBarTextStyle = TextStyle(
   fontFamily: 'Roboto',
   fontSize: 10,

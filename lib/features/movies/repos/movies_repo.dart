@@ -9,7 +9,7 @@ class MoviesRepo {
   static Future<List<MoviesModel>> fetchMovies() async {
     List<MoviesModel> models = [];
     try {
-      var response = await ApiCalls.get("$urlTMdb/upcoming");
+      var response = await ApiCalls.get("$urlTMdb/movie/upcoming");
 
       Map<String, dynamic> responseData = response.data;
 
@@ -29,8 +29,8 @@ class MoviesRepo {
 
   static Future<MovieDetailsModel> fetchMovieDetails(int movieId) async {
     try {
-      var response =
-          await ApiCalls.get("$urlTMdb/$movieId?append_to_response=videos");
+      var response = await ApiCalls.get(
+          "$urlTMdb/movie/$movieId?append_to_response=videos");
 
       Map<String, dynamic> responseData = response.data;
 
@@ -51,7 +51,8 @@ class MoviesRepo {
     ];
     ImageListData listData = ImageListData();
     try {
-      var response = await ApiCalls.get("$urlTMdb/$movieId/images?language=en");
+      var response =
+          await ApiCalls.get("$urlTMdb/movie/$movieId/images?language=en");
 
       Map<String, dynamic> responseData = response.data;
 
@@ -69,6 +70,28 @@ class MoviesRepo {
     } catch (e, s) {
       log("$e, $s");
       return ImageListData();
+    }
+  }
+
+  static Future<List<MoviesModel>> searchMovies(String query) async {
+    List<MoviesModel> models = [];
+    try {
+      var response = await ApiCalls.get(
+          "$urlTMdb/search/movie?language=en-US&query=$query");
+
+      Map<String, dynamic> responseData = response.data;
+
+      List<dynamic> results = responseData["results"];
+
+      for (int i = 0; i < results.length; i++) {
+        MoviesModel model = MoviesModel.fromMap(results[i]);
+        models.add(model);
+      }
+
+      return models;
+    } catch (e, s) {
+      log("$e, $s");
+      return [];
     }
   }
 }

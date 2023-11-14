@@ -28,3 +28,16 @@ class MovieDetailsFetchingSuccessfulState extends MoviesState {
     required this.movieImageList,
   });
 }
+
+class MovieSearchEntryState extends MoviesState {}
+
+class MovieSearchLoadingState extends MoviesState {}
+
+class MovieSearchErrorState extends MoviesState {}
+
+class MovieSearchSuccessfulState extends MoviesState {
+  final List<MoviesModel> movies;
+  MovieSearchSuccessfulState({
+    required this.movies,
+  });
+}

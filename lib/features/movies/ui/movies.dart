@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:the_movies/app/api/api.dart';
 import 'package:the_movies/app/theme/colors.dart';
 import 'package:the_movies/app/theme/styles.dart';
 import 'package:the_movies/app/widgets/fade_animation.dart';
+import 'package:the_movies/app/widgets/image.dart';
 import 'package:the_movies/features/movies/bloc/movies_bloc.dart';
 import 'package:the_movies/features/movies/ui/movie_details.dart';
 import 'package:the_movies/features/movies/ui/movies_search.dart';
@@ -121,24 +121,11 @@ class _MoviesPageState extends State<MoviesPage> {
                               ClipRRect(
                                 borderRadius: const BorderRadius.all(
                                     Radius.circular(8.0)),
-                                child: CachedNetworkImage(
-                                  fit: BoxFit.cover,
-                                  imageUrl: urlTMdbImagesW500 +
-                                      successState.movies[index].backdropPath,
-                                  progressIndicatorBuilder:
-                                      (context, url, downloadProgress) =>
-                                          Center(
-                                    child: SizedBox(
-                                      height: 42,
-                                      width: 42,
-                                      child: CircularProgressIndicator(
-                                        value: downloadProgress.progress,
-                                      ),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error),
-                                ),
+                                child: getNetworkImage(
+                                        urlTMdbImagesW500,
+                                        successState
+                                            .movies[index].backdropPath) ??
+                                    getNoImage(),
                               ),
                               Positioned(
                                 bottom: 0.0,

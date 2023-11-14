@@ -10,3 +10,11 @@ class MovieDetailsInitialFetchEvent extends MoviesEvent {
 
   MovieDetailsInitialFetchEvent({required this.movieId});
 }
+
+class MovieSearchEntryEvent extends MoviesEvent {}
+
+class MovieSearchFetchEvent extends MoviesEvent {
+  final String query;
+
+  MovieSearchFetchEvent({required this.query});
+}

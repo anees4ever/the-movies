@@ -1,10 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:the_movies/app/api/api.dart';
 import 'package:the_movies/app/theme/colors.dart';
 import 'package:the_movies/app/theme/styles.dart';
 import 'package:the_movies/app/widgets/fade_animation.dart';
+import 'package:the_movies/app/widgets/image.dart';
 import 'package:the_movies/features/movies/bloc/movies_bloc.dart';
 import 'package:the_movies/features/movies/ui/movie_details.dart';
 
@@ -19,164 +22,219 @@ class MoviesSearchPage extends StatefulWidget {
 class _MoviesSearchPageState extends State<MoviesSearchPage> {
   final MoviesBloc moviesBloc = MoviesBloc();
 
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  Timer? _timer;
+
   @override
   void initState() {
+    _focusNode.requestFocus();
     super.initState();
+  }
+
+  clearSearch() {
+    try {
+      if (_timer != null) {
+        _timer!.cancel();
+      }
+    } catch (e, s) {
+      log("$e, $s");
+    }
+  }
+
+  startASearchDelayed() {
+    clearSearch();
+    _timer = Timer(const Duration(seconds: 2), startASearch);
+  }
+
+  startASearch() {
+    clearSearch();
+
+    _focusNode.nextFocus();
+    moviesBloc.add(MovieSearchFetchEvent(query: _controller.text.trim()));
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<MoviesBloc, MoviesState>(
+      bloc: moviesBloc,
+      listener: (context, state) {},
+      builder: (context, state) {
+        switch (state.runtimeType) {
+          case MovieSearchLoadingState:
+            return getLoadingScafold();
+
+          case MovieSearchSuccessfulState:
+            final MovieSearchSuccessfulState successState =
+                state as MovieSearchSuccessfulState;
+            return getSearchResultScafold(successState);
+
+          case MovieSearchEntryState:
+          default:
+            return getSearchbarScafold();
+        }
+      },
+    );
+  }
+
+  Widget getLoadingScafold() {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 79,
         automaticallyImplyLeading: false,
-        title: Container(
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(30),
-            ),
-            boxShadow: [
-              BoxShadow(color: Colors.black38, spreadRadius: 0, blurRadius: 10),
-            ],
-            color: colorNavBar,
-          ),
+        title: const Text(
+          "Searching for movies...",
+          style: appBarTitleStyle,
         ),
       ),
       extendBody: true,
-      bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(30),
-            ),
-            boxShadow: [
-              BoxShadow(color: Colors.black38, spreadRadius: 0, blurRadius: 10),
-            ],
-            color: colorNavBar,
-          ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(30),
-            ),
-            child: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: 1,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.apps_outlined),
-                  label: "Dashboard",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.ondemand_video_outlined),
-                  label: "Watch",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.video_library_outlined),
-                  label: "Media Library",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.list_outlined),
-                  label: "More",
-                ),
-              ],
-            ),
-          )),
-      body: BlocConsumer<MoviesBloc, MoviesState>(
-        bloc: moviesBloc,
-        listener: (context, state) {},
-        builder: (context, state) {
-          switch (state.runtimeType) {
-            case MoviesFetchingLoadingState:
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            case MoviesFetchingSuccessfulState:
-              final successState = state as MoviesFetchingSuccessfulState;
+      body: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
 
-              return ListView.builder(
-                itemCount: successState.movies.length,
-                itemBuilder: (context, index) {
-                  return FadeAnimation(
-                    delay: (index + 1) * 10,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          MovieDetailsPage.routeName,
-                          arguments: successState.movies[index],
-                        );
-                      },
-                      child: AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: Container(
-                          padding: const EdgeInsets.all(0),
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          decoration: const BoxDecoration(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(8.0)),
-                            color: colorAppBackground,
-                            shape: BoxShape.rectangle,
-                          ),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              ClipRRect(
-                                borderRadius: const BorderRadius.all(
-                                    Radius.circular(8.0)),
-                                child: CachedNetworkImage(
-                                  fit: BoxFit.cover,
-                                  imageUrl: urlTMdbImagesW500 +
-                                      successState.movies[index].backdropPath,
-                                  progressIndicatorBuilder:
-                                      (context, url, downloadProgress) =>
-                                          Center(
-                                    child: SizedBox(
-                                      height: 42,
-                                      width: 42,
-                                      child: CircularProgressIndicator(
-                                        value: downloadProgress.progress,
-                                      ),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.error),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 0.0,
-                                left: 0.0,
-                                right: 0.0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.vertical(
-                                        bottom: Radius.circular(8.0)),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.transparent,
-                                        Colors.black87,
-                                      ],
-                                    ),
-                                  ),
-                                  child: Text(
-                                    successState.movies[index].title,
-                                    style: upcomingMovieNameStyle,
-                                  ),
-                                ),
-                              ),
-                            ],
+  Widget getSearchbarScafold() {
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 79,
+        automaticallyImplyLeading: false,
+        title: TextField(
+          controller: _controller,
+          focusNode: _focusNode,
+          decoration: InputDecoration(
+            enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                borderSide: BorderSide(color: colorAppBackground, width: 1.0)),
+            focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                borderSide: BorderSide(color: colorAppBackground, width: 1.0)),
+            prefixIcon: const Icon(
+              Icons.search_outlined,
+              color: textColor,
+              size: 32,
+            ),
+            suffixIcon: IconButton(
+              onPressed: () {
+                clearSearch();
+                if (_controller.text.isEmpty) {
+                  Navigator.of(context).pop();
+                } else {
+                  _controller.text = "";
+                  _focusNode.requestFocus();
+                }
+              },
+              icon: const Icon(
+                Icons.close_outlined,
+                color: textColor,
+                size: 32,
+              ),
+            ),
+            border: InputBorder.none,
+            filled: true,
+            fillColor: colorAppBackground,
+            hintText: "TV shows, movies and more",
+          ),
+          onChanged: (value) {
+            startASearchDelayed();
+          },
+          onEditingComplete: () {
+            startASearch();
+          },
+        ),
+      ),
+      extendBody: true,
+      body: const Center(
+        child: Text("Search for your favorite movies.",
+            style: searchMovieNameStyle),
+      ),
+    );
+  }
+
+  Widget getSearchResultScafold(final MovieSearchSuccessfulState successState) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "${successState.movies.length} Results Found",
+          style: appBarTitleStyle,
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_outlined,
+            color: textColor,
+          ),
+          onPressed: () {
+            _controller.text = "";
+            _focusNode.requestFocus();
+            moviesBloc.add(MovieSearchEntryEvent());
+          },
+        ),
+      ),
+      extendBody: true,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView.builder(
+          itemCount: successState.movies.length,
+          itemBuilder: (context, index) {
+            return FadeAnimation(
+              delay: (index + 1) * 10,
+              child: InkWell(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    MovieDetailsPage.routeName,
+                    arguments: successState.movies[index],
+                  );
+                },
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8.0)),
+                              color: colorAppBackground,
+                              shape: BoxShape.rectangle,
+                            ),
+                            child: ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(8.0)),
+                              child: getNetworkImage(
+                                      urlTMdbImagesW500,
+                                      successState
+                                          .movies[index].backdropPath) ??
+                                  getNoImage(),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              );
-            default:
-              return const SizedBox();
-          }
-        },
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 5,
+                        child: Text(
+                          successState.movies[index].title,
+                          style: searchMovieNameStyle,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.more_horiz_outlined,
+                        color: colorSecondary,
+                        size: 32,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

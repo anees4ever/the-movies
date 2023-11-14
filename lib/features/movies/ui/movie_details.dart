@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:the_movies/app/api/api.dart';
@@ -6,6 +5,7 @@ import 'package:the_movies/app/theme/colors.dart';
 import 'package:the_movies/app/theme/styles.dart';
 import 'package:the_movies/app/widgets/buttons.dart';
 import 'package:the_movies/app/widgets/error_page.dart';
+import 'package:the_movies/app/widgets/image.dart';
 import 'package:the_movies/features/movies/bloc/movies_bloc.dart';
 import 'package:the_movies/features/movies/model/movies_model.dart';
 import 'package:the_movies/features/movies/ui/movie_trailer.dart';
@@ -75,36 +75,22 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                 children: [
                   Stack(
                     children: [
-                      CachedNetworkImage(
-                        imageUrl: urlTMdbImagesBig +
+                      getNetworkImage(
+                            urlTMdbImagesBig,
                             successState.movieDetails.backdropPath,
-                        imageBuilder: (context, imageProvider) => Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: imageProvider,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          child: const AspectRatio(
-                            aspectRatio: 1,
-                          ),
-                        ),
-                        progressIndicatorBuilder:
-                            (context, url, downloadProgress) => AspectRatio(
-                          aspectRatio: 1,
-                          child: Center(
-                            child: SizedBox(
-                              height: 42,
-                              width: 42,
-                              child: CircularProgressIndicator(
-                                value: downloadProgress.progress,
+                            imageBuilder: (context, imageProvider) => Container(
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: imageProvider,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              child: const AspectRatio(
+                                aspectRatio: 1,
                               ),
                             ),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
-                      ),
+                          ) ??
+                          getNoImage(),
                       Positioned(
                         bottom: 0.0,
                         left: 0.0,
@@ -142,22 +128,18 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                                   child: AspectRatio(
                                     aspectRatio: successState
                                         .movieImageList.logos[0].aspectRatio,
-                                    child: CachedNetworkImage(
-                                      fit: BoxFit.cover,
-                                      imageUrl: urlTMdbImagesBig +
+                                    child: getNetworkImage(
+                                          urlTMdbImagesBig,
                                           successState
                                               .movieImageList.logos[0].filePath,
-                                      progressIndicatorBuilder:
-                                          (context, url, downloadProgress) =>
-                                              Center(
-                                        child: Text(
-                                          widget.movieModel.title,
-                                          style: movieNameStyle,
-                                        ),
-                                      ),
-                                      errorWidget: (context, url, error) =>
-                                          const Icon(Icons.error),
-                                    ),
+                                          progressWidget: Center(
+                                            child: Text(
+                                              widget.movieModel.title,
+                                              style: movieNameStyle,
+                                            ),
+                                          ),
+                                        ) ??
+                                        getNoImage(),
                                   ),
                                 ),
                               const SizedBox(
