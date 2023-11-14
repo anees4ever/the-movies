@@ -22,7 +22,9 @@ class MovieDetailsFetchingErrorState extends MoviesState {}
 
 class MovieDetailsFetchingSuccessfulState extends MoviesState {
   final MovieDetailsModel movieDetails;
+  final ImageListData movieImageList;
   MovieDetailsFetchingSuccessfulState({
     required this.movieDetails,
+    required this.movieImageList,
   });
 }

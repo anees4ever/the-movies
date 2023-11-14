@@ -7,22 +7,20 @@ import 'package:the_movies/app/theme/styles.dart';
 import 'package:the_movies/app/widgets/fade_animation.dart';
 import 'package:the_movies/features/movies/bloc/movies_bloc.dart';
 import 'package:the_movies/features/movies/ui/movie_details.dart';
-import 'package:the_movies/features/movies/ui/movies_search.dart';
 
-class MoviesPage extends StatefulWidget {
-  static const String routeName = "/";
-  const MoviesPage({super.key});
+class MoviesSearchPage extends StatefulWidget {
+  static const String routeName = "/movies/search";
+  const MoviesSearchPage({super.key});
 
   @override
-  State<MoviesPage> createState() => _MoviesPageState();
+  State<MoviesSearchPage> createState() => _MoviesSearchPageState();
 }
 
-class _MoviesPageState extends State<MoviesPage> {
+class _MoviesSearchPageState extends State<MoviesSearchPage> {
   final MoviesBloc moviesBloc = MoviesBloc();
 
   @override
   void initState() {
-    moviesBloc.add(MoviesInitialFetchEvent());
     super.initState();
   }
 
@@ -30,15 +28,18 @@ class _MoviesPageState extends State<MoviesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Watch"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search_outlined),
-            onPressed: () {
-              Navigator.pushNamed(context, MoviesSearchPage.routeName);
-            },
+        automaticallyImplyLeading: false,
+        title: Container(
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(30),
+            ),
+            boxShadow: [
+              BoxShadow(color: Colors.black38, spreadRadius: 0, blurRadius: 10),
+            ],
+            color: colorNavBar,
           ),
-        ],
+        ),
       ),
       extendBody: true,
       bottomNavigationBar: Container(

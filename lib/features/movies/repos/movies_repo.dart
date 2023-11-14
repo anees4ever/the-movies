@@ -1,12 +1,13 @@
 import 'dart:developer';
 
 import 'package:the_movies/app/api/api.dart';
+import 'package:the_movies/features/movies/model/images_model.dart';
 import 'package:the_movies/features/movies/model/movie_details_model.dart';
 import 'package:the_movies/features/movies/model/movies_model.dart';
 
 class MoviesRepo {
   static Future<List<MoviesModel>> fetchMovies() async {
-    List<MoviesModel> posts = [];
+    List<MoviesModel> models = [];
     try {
       var response = await ApiCalls.get("$urlTMdb/upcoming");
 
@@ -15,11 +16,11 @@ class MoviesRepo {
       List<dynamic> results = responseData["results"];
 
       for (int i = 0; i < results.length; i++) {
-        MoviesModel post = MoviesModel.fromMap(results[i]);
-        posts.add(post);
+        MoviesModel model = MoviesModel.fromMap(results[i]);
+        models.add(model);
       }
 
-      return posts;
+      return models;
     } catch (e, s) {
       log("$e, $s");
       return [];
@@ -39,6 +40,35 @@ class MoviesRepo {
     } catch (e, s) {
       log("$e, $s");
       return MovieDetailsModel.empty();
+    }
+  }
+
+  static Future<ImageListData> fetchMovieImageList(int movieId) async {
+    List<String> imageList = [
+      "backdrops",
+      "logos",
+      "posters",
+    ];
+    ImageListData listData = ImageListData();
+    try {
+      var response = await ApiCalls.get("$urlTMdb/$movieId/images?language=en");
+
+      Map<String, dynamic> responseData = response.data;
+
+      for (String key in imageList) {
+        List<dynamic> results = responseData[key];
+        List<ImagesModel> images = [];
+        for (int i = 0; i < results.length; i++) {
+          ImagesModel image = ImagesModel.fromMap(results[i]);
+          images.add(image);
+        }
+        listData[key] = images;
+      }
+
+      return listData;
+    } catch (e, s) {
+      log("$e, $s");
+      return ImageListData();
     }
   }
 }

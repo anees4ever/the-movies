@@ -1,10 +1,17 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:the_movies/app/api/api.dart';
+import 'package:the_movies/app/theme/colors.dart';
+import 'package:the_movies/app/theme/styles.dart';
+import 'package:the_movies/app/widgets/buttons.dart';
+import 'package:the_movies/app/widgets/error_page.dart';
 import 'package:the_movies/features/movies/bloc/movies_bloc.dart';
 import 'package:the_movies/features/movies/model/movies_model.dart';
+import 'package:the_movies/features/movies/ui/movie_trailer.dart';
 
 class MovieDetailsPage extends StatefulWidget {
+  static const String routeName = "/movies";
   const MovieDetailsPage({super.key, required this.movieModel});
 
   final MoviesModel movieModel;
@@ -18,18 +25,38 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
 
   @override
   void initState() {
-    moviesBloc
-        .add(MovieDetailsInitialFetchEvent(movieId: widget.movieModel.id));
+    if (widget.movieModel.id > 0) {
+      moviesBloc
+          .add(MovieDetailsInitialFetchEvent(movieId: widget.movieModel.id));
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.movieModel.id <= 0) {
+      return const ErrorPage(
+        title: "Movie Details not found...",
+        error: "No movie found in the response.",
+      );
+    }
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.movieModel.title),
+        title: const Text(
+          "Watch",
+          style: appBarSubTitleStyle,
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_outlined,
+            color: textColorDark,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        elevation: 0.0,
+        backgroundColor: Colors.transparent,
       ),
+      extendBodyBehindAppBar: true,
       body: BlocConsumer<MoviesBloc, MoviesState>(
         bloc: moviesBloc,
         listener: (context, state) {},
@@ -41,34 +68,188 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               );
             case MovieDetailsFetchingSuccessfulState:
               final successState = state as MovieDetailsFetchingSuccessfulState;
-
-              return ListView(
+              double width = MediaQuery.of(context).size.width;
+              double buttonSize = width * 0.5;
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-                    child: Image(
-                      fit: BoxFit.cover,
-                      image: NetworkImage(urlTMdbImagesW500 +
-                          successState.movieDetails.backdropPath),
+                  Stack(
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: urlTMdbImagesBig +
+                            successState.movieDetails.backdropPath,
+                        imageBuilder: (context, imageProvider) => Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          child: const AspectRatio(
+                            aspectRatio: 1,
+                          ),
+                        ),
+                        progressIndicatorBuilder:
+                            (context, url, downloadProgress) => AspectRatio(
+                          aspectRatio: 1,
+                          child: Center(
+                            child: SizedBox(
+                              height: 42,
+                              width: 42,
+                              child: CircularProgressIndicator(
+                                value: downloadProgress.progress,
+                              ),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      ),
+                      Positioned(
+                        bottom: 0.0,
+                        left: 0.0,
+                        right: 0.0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.vertical(
+                                bottom: Radius.circular(8.0)),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              stops: [0, 0.3, 0.9],
+                              colors: [
+                                Colors.transparent,
+                                Colors.black54,
+                                Colors.black,
+                              ],
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                height: 8.0,
+                              ),
+                              if (successState.movieImageList.logos.isEmpty)
+                                Text(
+                                  widget.movieModel.title,
+                                  style: movieNameStyle,
+                                ),
+                              if (successState.movieImageList.logos.isNotEmpty)
+                                SizedBox(
+                                  width: buttonSize,
+                                  child: AspectRatio(
+                                    aspectRatio: successState
+                                        .movieImageList.logos[0].aspectRatio,
+                                    child: CachedNetworkImage(
+                                      fit: BoxFit.cover,
+                                      imageUrl: urlTMdbImagesBig +
+                                          successState
+                                              .movieImageList.logos[0].filePath,
+                                      progressIndicatorBuilder:
+                                          (context, url, downloadProgress) =>
+                                              Center(
+                                        child: Text(
+                                          widget.movieModel.title,
+                                          style: movieNameStyle,
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
+                                    ),
+                                  ),
+                                ),
+                              const SizedBox(
+                                height: 8.0,
+                              ),
+                              Text(
+                                "In Theaters ${widget.movieModel.releaseDateFormatted}",
+                                style: appBarSubTitleStyle,
+                              ),
+                              const SizedBox(
+                                height: 8.0,
+                              ),
+                              getPrimaryButton(
+                                title: "Get Tickets",
+                                width: buttonSize,
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          "This feature is not implemented."),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(
+                                height: 8.0,
+                              ),
+                              getSecondaryButton(
+                                  title: "Watch Trailer",
+                                  icon: Icons.play_arrow,
+                                  width: buttonSize,
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      MovieTrailerPlayerPage.routeName,
+                                      arguments: state.movieDetails,
+                                    );
+                                  }),
+                              const SizedBox(
+                                height: 16.0,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.all(16.0),
+                      children: [
+                        const Text(
+                          "Genres",
+                          style: appBarTitleStyle,
+                        ),
+                        Wrap(
+                          direction: Axis.horizontal,
+                          alignment: WrapAlignment.start,
+                          spacing: 8.0,
+                          children: state.movieDetails.genres
+                              .map(
+                                (genre) => Chip(
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(20),
+                                    ),
+                                  ),
+                                  label: Text(genre.name, style: chipTextStyle),
+                                  backgroundColor: getTileColor(
+                                      state.movieDetails.genres.indexOf(genre)),
+                                  side: BorderSide.none,
+                                  elevation: 0.0,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        const Divider(
+                          height: 32.0,
+                          thickness: 1,
+                          color: colorDivider,
+                        ),
+                        const Text(
+                          "Overview",
+                          style: appBarTitleStyle,
+                        ),
+                        Text(
+                          successState.movieDetails.overview,
+                          style: overviewTextStyle,
+                          textAlign: TextAlign.justify,
+                        ),
+                      ],
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        "/movie/trailer",
-                        arguments: state.movieDetails,
-                      );
-                    },
-                    child: const Text("Watch Trailer"),
-                  ),
-                  Text(
-                    successState.movieDetails.title,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  Text(
-                    successState.movieDetails.overview,
-                    style: const TextStyle(color: Colors.black),
                   ),
                 ],
               );
@@ -78,5 +259,15 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
         },
       ),
     );
+  }
+
+  getTileColor(int index) {
+    return [
+      colorTileGreen,
+      colorTileMagenta,
+      colorTilePurple,
+      colorSecondary,
+      colorTileYellow
+    ][index % 5];
   }
 }

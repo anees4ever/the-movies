@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class MoviesModel {
   bool adult = false;
@@ -15,6 +16,16 @@ class MoviesModel {
   bool video = false;
   double voteAverage = 0.0;
   int voteCount = 0;
+
+  String get releaseDateFormatted {
+    if (releaseDate.isEmpty) {
+      return "";
+    }
+
+    return DateFormat("MMMM dd, yyyy")
+        .format(DateFormat("yyyy-MM-dd").parse(releaseDate));
+  }
+
   MoviesModel.empty();
   MoviesModel({
     required this.adult,

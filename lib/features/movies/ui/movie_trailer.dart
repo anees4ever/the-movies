@@ -1,11 +1,13 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:the_movies/app/widgets/buttons.dart';
+import 'package:the_movies/app/widgets/error_page.dart';
 import 'package:the_movies/features/movies/model/movie_details_model.dart';
+import 'package:the_movies/features/movies/model/movie_videos_model.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class MovieTrailerPlayerPage extends StatefulWidget {
+  static const String routeName = "/movies/trailer";
   final MovieDetailsModel movieDetails;
   const MovieTrailerPlayerPage({super.key, required this.movieDetails});
 
@@ -15,26 +17,43 @@ class MovieTrailerPlayerPage extends StatefulWidget {
 
 class _MovieTrailerPlayerPageState extends State<MovieTrailerPlayerPage> {
   late YoutubePlayerController youtubePlayerController;
-
+  String videoId = "";
   @override
   void initState() {
-    youtubePlayerController = YoutubePlayerController(
-      initialVideoId: widget.movieDetails.movieVideos[0].key,
-      flags: const YoutubePlayerFlags(
-        mute: false,
-        autoPlay: true,
-        disableDragSeek: false,
-        loop: false,
-        isLive: false,
-        forceHD: false,
-        enableCaption: true,
-      ),
-    )..addListener(listener);
+    videoId = widget.movieDetails.movieVideos.isEmpty
+        ? ""
+        : widget.movieDetails.movieVideos[0].key;
+    if (widget.movieDetails.movieVideos.isNotEmpty) {
+      for (MovieVideosModel video in widget.movieDetails.movieVideos) {
+        if (video.type.toLowerCase().contains("trailer")) {
+          videoId = video.key;
+          break;
+        }
+      }
+    }
 
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    //videoId = "";
+    if (videoId.isNotEmpty) {
+      youtubePlayerController = YoutubePlayerController(
+        initialVideoId: videoId,
+        flags: const YoutubePlayerFlags(
+          mute: false,
+          autoPlay: true,
+          disableDragSeek: false,
+          loop: false,
+          isLive: false,
+          forceHD: false,
+          enableCaption: true,
+        ),
+      )..addListener(listener);
+
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      youtubePlayerController = YoutubePlayerController(initialVideoId: "");
+    }
     super.initState();
   }
 
@@ -58,6 +77,12 @@ class _MovieTrailerPlayerPageState extends State<MovieTrailerPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (videoId.isEmpty) {
+      return const ErrorPage(
+        title: "No Trailer Video Found...",
+        error: "No Trailer video found in the response.",
+      );
+    }
     return YoutubePlayerBuilder(
       onExitFullScreen: () {
         SystemChrome.setPreferredOrientations(DeviceOrientation.values);
@@ -85,14 +110,14 @@ class _MovieTrailerPlayerPageState extends State<MovieTrailerPlayerPage> {
               maxLines: 1,
             ),
           ),
-          IconButton(
-            icon: const Icon(
-              Icons.settings,
-              color: Colors.white,
-              size: 25.0,
-            ),
+          getSecondaryButton(
+            title: "Done",
+            icon: Icons.close_outlined,
+            height: 32,
+            width: 120,
             onPressed: () {
-              log('Settings Tapped!');
+              SystemChrome.setPreferredOrientations(DeviceOrientation.values)
+                  .then((value) => Navigator.of(context).pop());
             },
           ),
         ],

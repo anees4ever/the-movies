@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:the_movies/features/movies/model/images_model.dart';
 import 'package:the_movies/features/movies/model/movie_details_model.dart';
 import 'package:the_movies/features/movies/model/movies_model.dart';
 import 'package:the_movies/features/movies/repos/movies_repo.dart';
@@ -28,7 +29,10 @@ class MoviesBloc extends Bloc<MoviesEvent, MoviesState> {
     emit(MovieDetailsFetchingLoadingState());
     MovieDetailsModel movieDetails =
         await MoviesRepo.fetchMovieDetails(event.movieId);
+    ImageListData movieImageList =
+        await MoviesRepo.fetchMovieImageList(event.movieId);
 
-    emit(MovieDetailsFetchingSuccessfulState(movieDetails: movieDetails));
+    emit(MovieDetailsFetchingSuccessfulState(
+        movieDetails: movieDetails, movieImageList: movieImageList));
   }
 }
