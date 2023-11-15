@@ -3,6 +3,22 @@ A Flutter app to display upcoming movies from TMDB
 
 It is an app that lists all upcoming movies using The Movie Db API (TMdb) and then navigates to book movie tickets.
 
+# APK Download
+Link to the apk file: <a href="https://raw.githubusercontent.com/anees4ever/the-movies/main/the_movie_app.apk" >The Movie App</a>
+
+# Video Demo
+Link to the video: <a href="https://raw.githubusercontent.com/anees4ever/the-movies/main/screenshots/screen_recording.mp4" >Video Link</a>
+
+# Screenshots
+<!-- TABLE_GENERATE_START -->
+| Home  | Search - Genres | Search - Searching | Search - Result | Movie Details | Shows | Booking |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| <img src="https://raw.githubusercontent.com/anees4ever/the-movies/main/screenshots/screenshot_home.png" width="200" /> | <img src="https://raw.githubusercontent.com/anees4ever/the-movies/main/screenshots/screenshot_search_1.png" width="200" /> | <img src="https://raw.githubusercontent.com/anees4ever/the-movies/main/screenshots/screenshot_search_2.png" width="200" /> | <img src="https://raw.githubusercontent.com/anees4ever/the-movies/main/screenshots/screenshot_search_3.png" width="200" /> | <img src="https://raw.githubusercontent.com/anees4ever/the-movies/main/screenshots/screenshot_movie_details.png" width="200" /> | <img src="https://raw.githubusercontent.com/anees4ever/the-movies/main/screenshots/screenshot_show_times.png" width="200" /> | <img src="https://raw.githubusercontent.com/anees4ever/the-movies/main/screenshots/screenshot_booking.png" width="200" /> |
+<!-- TABLE_GENERATE_END -->
+
+
+
+
 # Movie List Screen: List down all upcoming movies on the list 					
 Movie List API: https://api.themoviedb.org/3/movie/upcoming
 
