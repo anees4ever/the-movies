@@ -85,7 +85,10 @@ class _MovieTrailerPlayerPageState extends State<MovieTrailerPlayerPage> {
     }
     return YoutubePlayerBuilder(
       onExitFullScreen: () {
-        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
       },
       onEnterFullScreen: () {
         SystemChrome.setPreferredOrientations([
@@ -116,8 +119,10 @@ class _MovieTrailerPlayerPageState extends State<MovieTrailerPlayerPage> {
             height: 32,
             width: 120,
             onPressed: () {
-              SystemChrome.setPreferredOrientations(DeviceOrientation.values)
-                  .then((value) => Navigator.of(context).pop());
+              SystemChrome.setPreferredOrientations([
+                DeviceOrientation.portraitUp,
+                DeviceOrientation.portraitDown,
+              ]).then((value) => Navigator.of(context).pop());
             },
           ),
         ],
@@ -127,8 +132,10 @@ class _MovieTrailerPlayerPageState extends State<MovieTrailerPlayerPage> {
           }
         },
         onEnded: (data) async {
-          SystemChrome.setPreferredOrientations(DeviceOrientation.values)
-              .then((value) => Navigator.of(context).pop());
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+          ]).then((value) => Navigator.of(context).pop());
         },
       ),
       builder: (context, player) {

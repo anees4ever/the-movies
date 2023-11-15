@@ -1,16 +1,17 @@
-import 'dart:async';
-import 'dart:developer';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:the_movies/app/api/api.dart';
 import 'package:the_movies/app/theme/colors.dart';
 import 'package:the_movies/app/theme/styles.dart';
+import 'package:the_movies/app/widgets/bottom_navbar.dart';
 import 'package:the_movies/app/widgets/error_page.dart';
 import 'package:the_movies/app/widgets/image.dart';
 import 'package:the_movies/app/widgets/shimmer_skeleton.dart';
 import 'package:the_movies/features/movies/bloc/movies_bloc.dart';
 import 'package:the_movies/features/movies/model/genres_model.dart';
+import 'package:the_movies/features/movies/model/movie_data_model.dart';
 import 'package:the_movies/features/movies/model/movie_genres_model.dart';
 import 'package:the_movies/features/movies/ui/movie_details.dart';
 
@@ -28,265 +29,372 @@ class _MoviesSearchPageState extends State<MoviesSearchPage> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
-  Timer? _timer;
+  List<GenresEx> genresList = [];
+  List<MovieInfo> movieInfoList = [];
+
+  MoviesState currentState = MovieSearchInitState();
 
   @override
   void initState() {
-    _focusNode.requestFocus();
+    moviesBloc.add(MovieSearchInitEvent());
     super.initState();
   }
 
-  clearSearch() {
-    try {
-      if (_timer != null) {
-        _timer!.cancel();
-      }
-    } catch (e, s) {
-      log("$e, $s");
-    }
+  startSearching() {
+    moviesBloc.add(MovieSearchSearchingEvent(query: _controller.text.trim()));
   }
 
-  startASearchDelayed() {
-    clearSearch();
-    _timer = Timer(const Duration(seconds: 2), startASearch);
-  }
-
-  startASearch() {
-    clearSearch();
-
+  startSearchDone() {
     _focusNode.nextFocus();
-    moviesBloc.add(MovieSearchFetchEvent(query: _controller.text.trim()));
+    moviesBloc.add(MovieSearchResultEvent(movies: movieInfoList));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<MoviesBloc, MoviesState>(
-      bloc: moviesBloc,
-      listener: (context, state) {},
-      builder: (context, state) {
-        switch (state.runtimeType) {
-          case MovieSearchLoadingState:
-            return getLoadingScafold();
-
-          case MovieSearchSuccessfulState:
-            final MovieSearchSuccessfulState successState =
-                state as MovieSearchSuccessfulState;
-            return getSearchResultScafold(successState);
-          case MovieSearchErrorState:
-            return const ErrorPage(
-              back: false,
-              title: "No Search results!",
-              error: "Search result failed to show movie results.",
-            );
-          case MovieSearchEntryState:
-          default:
-            return getSearchbarScafold();
+    return WillPopScope(
+      onWillPop: () async {
+        if (currentState.runtimeType == MovieSearchSuccessfulState ||
+            currentState.runtimeType == MovieSearchSearchingState) {
+          _controller.text = "";
+          movieInfoList = [];
+          moviesBloc.add(MovieSearchInitEvent(genres: genresList));
+          return false;
+        } else {
+          return true;
         }
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            toolbarHeight: 79,
+            automaticallyImplyLeading: false,
+            title: BlocConsumer<MoviesBloc, MoviesState>(
+              bloc: moviesBloc,
+              listener: (context, state) {},
+              builder: (context, state) {
+                currentState = state;
+                if (state.runtimeType == MovieSearchSuccessfulState) {
+                  var successState = state as MovieSearchSuccessfulState;
+                  return Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_outlined,
+                          color: textColor,
+                          size: 28,
+                        ),
+                        onPressed: () {
+                          _controller.text = "";
+                          movieInfoList = [];
+                          moviesBloc
+                              .add(MovieSearchInitEvent(genres: genresList));
+                        },
+                      ),
+                      Text(
+                        "${successState.movies.length} Results Found",
+                        style: text16BoldStyle,
+                      ),
+                    ],
+                  );
+                }
+                return TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  decoration: InputDecoration(
+                    enabledBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                        borderSide:
+                            BorderSide(color: colorAppBackground, width: 1.0)),
+                    focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                        borderSide:
+                            BorderSide(color: colorAppBackground, width: 1.0)),
+                    prefixIcon: const Icon(
+                      Icons.search_outlined,
+                      color: textColor,
+                      size: 32,
+                    ),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        if (_controller.text.isEmpty) {
+                          Navigator.of(context).pop();
+                        } else {
+                          _controller.text = "";
+                          moviesBloc
+                              .add(MovieSearchInitEvent(genres: genresList));
+                          _focusNode.requestFocus();
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.close_outlined,
+                        color: textColor,
+                        size: 32,
+                      ),
+                    ),
+                    border: InputBorder.none,
+                    filled: true,
+                    fillColor: colorAppBackground,
+                    hintText: "TV shows, movies and more",
+                  ),
+                  onChanged: (value) {
+                    startSearching();
+                  },
+                  onEditingComplete: () {
+                    if (_controller.text.trim().isNotEmpty) {
+                      startSearchDone();
+                    } else {
+                      _focusNode.nextFocus();
+                    }
+                  },
+                );
+              },
+            ),
+          ),
+          extendBody: true,
+          bottomNavigationBar: const BottomNavBarWidget(),
+          body: BlocConsumer<MoviesBloc, MoviesState>(
+            bloc: moviesBloc,
+            listener: (context, state) {},
+            builder: (context, state) {
+              switch (state.runtimeType) {
+                case MovieSearchSuccessfulState:
+                  final MovieSearchSuccessfulState successState =
+                      state as MovieSearchSuccessfulState;
+                  movieInfoList = successState.movies;
+                  return getSearchResultView(false, successState.movies);
+                case MovieSearchErrorState:
+                  return const ErrorPage(
+                    back: false,
+                    title: "No Search results!",
+                    error: "Search result failed to show movie results.",
+                  );
+
+                case MovieSearchSearchingState:
+                  final MovieSearchSearchingState searchingState =
+                      state as MovieSearchSearchingState;
+                  movieInfoList = searchingState.movies;
+                  if (_controller.text.trim().isEmpty) {
+                    return getSearchMainScreen();
+                  } else {
+                    return getSearchResultView(true, searchingState.movies);
+                  }
+
+                case MovieSearchMainState:
+                  genresList = (state as MovieSearchMainState).genres;
+                  return getSearchMainScreen();
+                case MovieSearchInitState:
+                default:
+                  return getLoadingScreen();
+              }
+            },
+          )),
+    );
+  }
+
+  Widget getLoadingScreen() {
+    Widget row = const Row(
+      children: [
+        Expanded(
+          child: AspectRatio(
+            aspectRatio: 14 / 9,
+            child: ShimmerLoading(
+              isLoading: true,
+              child: SizedBox(
+                height: 140,
+                child: ShimmerSkeleton(),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(width: 16),
+        Expanded(
+          child: AspectRatio(
+            aspectRatio: 14 / 9,
+            child: ShimmerLoading(
+              isLoading: true,
+              child: SizedBox(
+                height: 140,
+                child: ShimmerSkeleton(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+    return Shimmer(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            row,
+            const SizedBox(height: 16.0),
+            row,
+            const SizedBox(height: 16.0),
+            row,
+            const SizedBox(height: 16.0),
+            row,
+            const SizedBox(height: 16.0),
+            row,
+            const SizedBox(height: 16.0),
+            row,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget getSearchMainScreen() {
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 60),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 14 / 9,
+      ),
+      itemCount: genresList.length,
+      itemBuilder: (context, index) {
+        return InkWell(
+          onTap: () {
+            moviesBloc.add(
+              MovieSearchResultEvent(genreId: genresList[index].id),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(0),
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(8.0)),
+              color: colorAppBackground,
+              shape: BoxShape.rectangle,
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                  child: getNetworkImage(
+                          urlTMdbImagesW500, genresList[index].image) ??
+                      getNoImage(),
+                ),
+                Positioned(
+                  bottom: 0.0,
+                  left: 0.0,
+                  right: 0.0,
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: const BoxDecoration(
+                      borderRadius:
+                          BorderRadius.vertical(bottom: Radius.circular(8.0)),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black87,
+                        ],
+                      ),
+                    ),
+                    child: Text(
+                      genresList[index].name,
+                      style: text16BoldDarkStyle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
       },
     );
   }
 
-  Widget getLoadingScafold() {
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 79,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          "Searching for movies...",
-          style: text16BoldStyle,
-        ),
-      ),
-      extendBody: true,
-      body: Shimmer(
-        child: ListView(
-          physics: const NeverScrollableScrollPhysics(),
-          children: List.generate(
-            5,
-            (index) => const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: ShimmerLoading(
-                isLoading: true,
-                child: SizedBox(
-                  height: 120,
-                  child: Row(
-                    children: [
-                      Expanded(flex: 4, child: ShimmerSkeleton()),
-                      SizedBox(width: 16),
-                      Expanded(
-                          flex: 6,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ShimmerSkeleton(height: 22),
-                              SizedBox(height: 8),
-                              ShimmerSkeleton(height: 22),
-                            ],
-                          )),
-                      SizedBox(width: 4),
-                      ShimmerSkeleton(
-                        height: 32,
-                        width: 32,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+  Widget getSearchResultView(final bool isSearching, List<MovieInfo> movies) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isSearching)
+            const Text(
+              "Top Results",
+              style: text12BoldStyle,
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget getSearchbarScafold() {
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 79,
-        automaticallyImplyLeading: false,
-        title: TextField(
-          controller: _controller,
-          focusNode: _focusNode,
-          decoration: InputDecoration(
-            enabledBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                borderSide: BorderSide(color: colorAppBackground, width: 1.0)),
-            focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                borderSide: BorderSide(color: colorAppBackground, width: 1.0)),
-            prefixIcon: const Icon(
-              Icons.search_outlined,
-              color: textColor,
-              size: 32,
+          if (isSearching)
+            const Divider(
+              height: 16,
+              thickness: 1,
+              color: colorDivider,
             ),
-            suffixIcon: IconButton(
-              onPressed: () {
-                clearSearch();
-                if (_controller.text.isEmpty) {
-                  Navigator.of(context).pop();
-                } else {
-                  _controller.text = "";
-                  _focusNode.requestFocus();
-                }
-              },
-              icon: const Icon(
-                Icons.close_outlined,
-                color: textColor,
-                size: 32,
-              ),
-            ),
-            border: InputBorder.none,
-            filled: true,
-            fillColor: colorAppBackground,
-            hintText: "TV shows, movies and more",
-          ),
-          onChanged: (value) {
-            startASearchDelayed();
-          },
-          onEditingComplete: () {
-            startASearch();
-          },
-        ),
-      ),
-      extendBody: true,
-      body: const Center(
-        child: Text("Search for your favorite movies.", style: text16BoldStyle),
-      ),
-    );
-  }
-
-  Widget getSearchResultScafold(final MovieSearchSuccessfulState successState) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "${successState.movies.length} Results Found",
-          style: text16BoldStyle,
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_outlined,
-            color: textColor,
-          ),
-          onPressed: () {
-            _controller.text = "";
-            _focusNode.requestFocus();
-            moviesBloc.add(MovieSearchEntryEvent());
-          },
-        ),
-      ),
-      extendBody: true,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: successState.movies.length,
-          itemBuilder: (context, index) {
-            return InkWell(
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  MovieDetailsPage.routeName,
-                  arguments: successState.movies[index],
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(8.0)),
-                            color: colorAppBackground,
-                            shape: BoxShape.rectangle,
-                          ),
-                          child: ClipRRect(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(8.0)),
-                            child: getNetworkImage(
-                                    urlTMdbImagesW500,
-                                    successState
-                                        .movies[index].data.backdropPath) ??
-                                getNoImage(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: isSearching ? min(movies.length, 6) : movies.length,
+              itemBuilder: (context, index) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      MovieDetailsPage.routeName,
+                      arguments: movies[index],
+                    );
+                  },
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0)),
+                                color: colorAppBackground,
+                                shape: BoxShape.rectangle,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: const BorderRadius.all(
+                                    Radius.circular(8.0)),
+                                child: getNetworkImage(urlTMdbImagesW500,
+                                        movies[index].data.backdropPath) ??
+                                    getNoImage(),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                            flex: 6,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  movies[index].data.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: text16BoldStyle,
+                                ),
+                                Text(
+                                  getGenreNameFromIds(movies[index].genres,
+                                      movies[index].genresMaster),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: text12TintedStyle,
+                                ),
+                              ],
+                            )),
+                        const Icon(
+                          Icons.more_horiz_outlined,
+                          color: colorSecondary,
+                          size: 32,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                        flex: 6,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              successState.movies[index].data.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: text16BoldStyle,
-                            ),
-                            Text(
-                              getGenreNameFromIds(
-                                  successState.movies[index].genres,
-                                  successState.movies[index].genresMaster),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: text12TintedStyle,
-                            ),
-                          ],
-                        )),
-                    const Icon(
-                      Icons.more_horiz_outlined,
-                      color: colorSecondary,
-                      size: 32,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

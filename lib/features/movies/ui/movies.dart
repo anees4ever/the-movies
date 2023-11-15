@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:the_movies/app/api/api.dart';
 import 'package:the_movies/app/theme/colors.dart';
 import 'package:the_movies/app/theme/styles.dart';
+import 'package:the_movies/app/widgets/bottom_navbar.dart';
 import 'package:the_movies/app/widgets/error_page.dart';
 import 'package:the_movies/app/widgets/image.dart';
 import 'package:the_movies/app/widgets/shimmer_skeleton.dart';
@@ -42,43 +43,7 @@ class _MoviesPageState extends State<MoviesPage> {
         ],
       ),
       extendBody: true,
-      bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(30),
-            ),
-            boxShadow: [
-              BoxShadow(color: Colors.black38, spreadRadius: 0, blurRadius: 10),
-            ],
-            color: colorNavBar,
-          ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(30),
-            ),
-            child: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: 1,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.apps_outlined),
-                  label: "Dashboard",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.ondemand_video_outlined),
-                  label: "Watch",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.video_library_outlined),
-                  label: "Media Library",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.list_outlined),
-                  label: "More",
-                ),
-              ],
-            ),
-          )),
+      bottomNavigationBar: const BottomNavBarWidget(),
       body: BlocConsumer<MoviesBloc, MoviesState>(
         bloc: moviesBloc,
         listener: (context, state) {},

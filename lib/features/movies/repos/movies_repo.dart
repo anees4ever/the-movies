@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:the_movies/app/api/api.dart';
-import 'package:the_movies/app/api/database.dart';
+import 'package:the_movies/app/database/database.dart';
 import 'package:the_movies/features/movies/model/genres_model.dart';
 import 'package:the_movies/features/movies/model/movie_genres_model.dart';
 import 'package:the_movies/features/movies/model/movie_images_model.dart';

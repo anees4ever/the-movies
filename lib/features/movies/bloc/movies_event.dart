@@ -11,10 +11,21 @@ class MovieDetailsInitialFetchEvent extends MoviesEvent {
   MovieDetailsInitialFetchEvent({required this.movieId});
 }
 
-class MovieSearchEntryEvent extends MoviesEvent {}
+class MovieSearchInitEvent extends MoviesEvent {
+  final List<GenresEx> genres;
 
-class MovieSearchFetchEvent extends MoviesEvent {
+  MovieSearchInitEvent({this.genres = const []});
+}
+
+class MovieSearchSearchingEvent extends MoviesEvent {
   final String query;
 
-  MovieSearchFetchEvent({required this.query});
+  MovieSearchSearchingEvent({required this.query});
+}
+
+class MovieSearchResultEvent extends MoviesEvent {
+  final List<MovieInfo> movies;
+  final int genreId;
+
+  MovieSearchResultEvent({this.movies = const [], this.genreId = 0});
 }

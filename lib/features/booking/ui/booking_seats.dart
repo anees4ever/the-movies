@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:the_movies/app/extensions/dateformat.dart';
@@ -18,6 +20,8 @@ class BookingSeatsPage extends StatefulWidget {
 
 class _BookingSeatsPageState extends State<BookingSeatsPage> {
   final ScrollController _selectedSeatScroller = ScrollController();
+  final ScreenSeatArrangementController screenSeatArrangementController =
+      ScreenSeatArrangementController();
 
   @override
   void initState() {
@@ -95,6 +99,127 @@ class _BookingSeatsPageState extends State<BookingSeatsPage> {
                     child: ScreenSeatArrangementView(
                       cinemaScreen: cinemaScreen,
                       bookingProvider: bookingProvider,
+                      controller: screenSeatArrangementController,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 6.0,
+                    right: 6.0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (screenSeatArrangementController
+                                .transformationController.value
+                                .entry(0, 0) !=
+                            1.0)
+                          InkWell(
+                            onTap: () {
+                              screenSeatArrangementController
+                                  .transformationController
+                                  .value = Matrix4.identity();
+                              setState(() {});
+                            },
+                            child: SizedBox(
+                              width: 32,
+                              height: 32,
+                              child: Container(
+                                padding: const EdgeInsets.all(3.0),
+                                decoration: const BoxDecoration(
+                                  color: textColorDark,
+                                  shape: BoxShape.rectangle,
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(16.0),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.sync_outlined,
+                                  size: 20,
+                                  color: textColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 3.0),
+                        InkWell(
+                          onTap: () {
+                            var zoomFactor = min(
+                                3.0,
+                                screenSeatArrangementController
+                                        .transformationController.value
+                                        .entry(0, 0) +
+                                    0.5);
+                            screenSeatArrangementController
+                                .transformationController.value
+                                .setEntry(0, 0, zoomFactor);
+                            screenSeatArrangementController
+                                .transformationController.value
+                                .setEntry(1, 1, zoomFactor);
+                            screenSeatArrangementController
+                                .transformationController.value
+                                .setEntry(2, 2, zoomFactor);
+                            setState(() {});
+                          },
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: Container(
+                              padding: const EdgeInsets.all(3.0),
+                              decoration: const BoxDecoration(
+                                color: textColorDark,
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(16.0),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.add_outlined,
+                                size: 20,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 3.0),
+                        InkWell(
+                          onTap: () {
+                            var zoomFactor = max(
+                                0.5,
+                                screenSeatArrangementController
+                                        .transformationController.value
+                                        .entry(0, 0) -
+                                    0.5);
+                            screenSeatArrangementController
+                                .transformationController.value
+                                .setEntry(0, 0, zoomFactor);
+                            screenSeatArrangementController
+                                .transformationController.value
+                                .setEntry(1, 1, zoomFactor);
+                            screenSeatArrangementController
+                                .transformationController.value
+                                .setEntry(2, 2, zoomFactor);
+                            setState(() {});
+                          },
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: Container(
+                              padding: const EdgeInsets.all(3.0),
+                              decoration: const BoxDecoration(
+                                color: textColorDark,
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(16.0),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.remove_outlined,
+                                size: 20,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -256,17 +381,23 @@ class _BookingSeatsPageState extends State<BookingSeatsPage> {
   }
 }
 
+class ScreenSeatArrangementController {
+  var transformationController = TransformationController();
+}
+
 class ScreenSeatArrangementView extends StatelessWidget {
-  const ScreenSeatArrangementView({
-    super.key,
-    required this.cinemaScreen,
-    this.bookingProvider,
-    this.scaledView = false,
-    this.boxWidth = 0.0,
-    this.boxHeight = 0.0,
-  }) : assert(!scaledView || (boxWidth > 0 && boxWidth > 0),
+  const ScreenSeatArrangementView(
+      {super.key,
+      required this.cinemaScreen,
+      this.bookingProvider,
+      this.scaledView = false,
+      this.boxWidth = 0.0,
+      this.boxHeight = 0.0,
+      this.controller})
+      : assert(!scaledView || (boxWidth > 0 && boxWidth > 0),
             "Set Box Size if scaledView set to true");
 
+  final ScreenSeatArrangementController? controller;
   final CinemaScreen cinemaScreen;
   final BookingProvider? bookingProvider;
   final bool scaledView;
@@ -284,7 +415,9 @@ class ScreenSeatArrangementView extends StatelessWidget {
     final double height =
         (cinemaScreen.seatingArrangement.length * (itemHeight + 14)) + 60;
 
-    var transformationController = TransformationController();
+    var transformationController = controller == null
+        ? TransformationController()
+        : controller!.transformationController;
 
     if (scaledView) {
       const zoomFactor = 0.50;
@@ -296,6 +429,10 @@ class ScreenSeatArrangementView extends StatelessWidget {
 
       transformationController.value.setEntry(0, 3, xTranslate);
       transformationController.value.setEntry(1, 3, yTranslate);
+    }
+
+    if (controller != null) {
+      controller!.transformationController = transformationController;
     }
 
     return IgnorePointer(

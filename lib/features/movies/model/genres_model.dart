@@ -51,3 +51,8 @@ abstract class GenresDao {
   @insert
   Future<void> insertGenre(Genres data);
 }
+
+class GenresEx extends Genres {
+  final String image;
+  GenresEx(super.id, super.name, this.image);
+}

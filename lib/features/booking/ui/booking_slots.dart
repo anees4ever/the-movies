@@ -149,81 +149,96 @@ class _BookingSlotsPageState extends State<BookingSlotsPage> {
                         style: text16RedStyle,
                       ),
                     if (showTimes.isNotEmpty)
-                      SizedBox(
-                        height: 230,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: showTimes.length,
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () {
-                                bookingProvider.updateSlot(
-                                    index, showTimes[index]);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.only(right: 16.0),
-                                width: boxWidth,
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          showTimes[index].time.toString(),
-                                          style: text12BoldStyle,
-                                        ),
-                                        Text(
-                                          " ${showTimes[index].cinema.toString()} + ${showTimes[index].screen.toString()}",
-                                          style: text12Style,
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
-                                      height: 180,
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(16)),
-                                        border: Border.all(
-                                            color: index ==
-                                                    bookingProvider
-                                                        .showTimeIndex
-                                                ? colorSecondary
-                                                : colorIcons),
+                      FutureBuilder<bool>(future: () async {
+                        await Future.delayed(const Duration(milliseconds: 500));
+                        return true;
+                      }(), builder: (context, snapshot) {
+                        bool loaded =
+                            snapshot.connectionState == ConnectionState.done &&
+                                snapshot.hasData &&
+                                snapshot.data!;
+
+                        return SizedBox(
+                          height: 230,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: showTimes.length,
+                            itemBuilder: (context, index) {
+                              return InkWell(
+                                onTap: () {
+                                  bookingProvider.updateSlot(
+                                      index, showTimes[index]);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.only(right: 16.0),
+                                  width: boxWidth,
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            showTimes[index].time.toString(),
+                                            style: text12BoldStyle,
+                                          ),
+                                          Text(
+                                            " ${showTimes[index].cinema.toString()} + ${showTimes[index].screen.toString()}",
+                                            style: text12Style,
+                                          ),
+                                        ],
                                       ),
-                                      child: ScreenSeatArrangementView(
-                                        cinemaScreen: getCinemaScreen(
-                                            showTimes[index].screen),
-                                        scaledView: true,
-                                        boxWidth: boxWidth,
-                                        boxHeight: 180,
+                                      Container(
+                                        height: 180,
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(16)),
+                                          border: Border.all(
+                                              color: index ==
+                                                      bookingProvider
+                                                          .showTimeIndex
+                                                  ? colorSecondary
+                                                  : colorIcons),
+                                        ),
+                                        child: loaded
+                                            ? ScreenSeatArrangementView(
+                                                cinemaScreen: getCinemaScreen(
+                                                    showTimes[index].screen),
+                                                scaledView: true,
+                                                boxWidth: boxWidth,
+                                                boxHeight: 180,
+                                              )
+                                            : const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
                                       ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        const Text(
-                                          "From ",
-                                          style: text12Style,
-                                        ),
-                                        Text(
-                                          "${showTimes[index].regularRate.toString()}\$",
-                                          style: text12BoldStyle,
-                                        ),
-                                        const Text(
-                                          " or ",
-                                          style: text12Style,
-                                        ),
-                                        Text(
-                                          "${showTimes[index].points.toString()} bonus",
-                                          style: text12BoldStyle,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                      Row(
+                                        children: [
+                                          const Text(
+                                            "From ",
+                                            style: text12Style,
+                                          ),
+                                          Text(
+                                            "${showTimes[index].regularRate.toString()}\$",
+                                            style: text12BoldStyle,
+                                          ),
+                                          const Text(
+                                            " or ",
+                                            style: text12Style,
+                                          ),
+                                          Text(
+                                            "${showTimes[index].points.toString()} bonus",
+                                            style: text12BoldStyle,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                              );
+                            },
+                          ),
+                        );
+                      }),
                   ],
                 ),
               ),

@@ -27,11 +27,23 @@ class MovieDetailsFetchingSuccessfulState extends MoviesState {
   });
 }
 
-class MovieSearchEntryState extends MoviesState {}
+class MovieSearchInitState extends MoviesState {}
 
-class MovieSearchLoadingState extends MoviesState {}
+class MovieSearchMainState extends MoviesState {
+  final List<GenresEx> genres;
+  MovieSearchMainState({
+    required this.genres,
+  });
+}
 
 class MovieSearchErrorState extends MoviesState {}
+
+class MovieSearchSearchingState extends MoviesState {
+  final List<MovieInfo> movies;
+  MovieSearchSearchingState({
+    required this.movies,
+  });
+}
 
 class MovieSearchSuccessfulState extends MoviesState {
   final List<MovieInfo> movies;

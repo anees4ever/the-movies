@@ -45,6 +45,9 @@ abstract class MovieGenresDao {
   @Query('SELECT * FROM MovieGenres WHERE genreId = :genreId')
   Future<List<MovieGenres>> findAllByGenre(int genreId);
 
+  @Query('SELECT * FROM MovieGenres GROUP BY genreId')
+  Future<List<MovieGenres>> findUniqueGenres();
+
   @insert
   Future<void> insertGenre(MovieGenres data);
 

@@ -36,6 +36,20 @@ class MovieData {
   final double voteAverage;
   final int voteCount;
 
+  int scoreOf(String query) {
+    String a = title.toLowerCase();
+    String b = query.toLowerCase();
+    if (a == b) {
+      return 0;
+    } else if (a.startsWith(b)) {
+      return 1;
+    } else if (a.contains(b) && !a.endsWith(b)) {
+      return 2;
+    } else {
+      return 3;
+    }
+  }
+
   String get releaseDateFormatted {
     if (releaseDate.isEmpty) {
       return "";
@@ -107,6 +121,13 @@ class MovieData {
 abstract class MovieDataDao {
   @Query('SELECT * FROM MovieData')
   Future<List<MovieData>> findAllMovies();
+
+  @Query('SELECT * FROM MovieData WHERE title LIKE :query')
+  Future<List<MovieData>> searchMovies(String query);
+
+  @Query(
+      'SELECT * FROM MovieData WHERE id IN (SELECT movieId FROM MovieGenres WHERE genreId=:genreId)')
+  Future<List<MovieData>> searchMoviesByGenre(int genreId);
 
   @Query('SELECT * FROM MovieData WHERE id = :id')
   Future<MovieData?> findMovieById(int id);
