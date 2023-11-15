@@ -39,15 +39,20 @@ dependencies:
   bloc:
   flutter_bloc:
   dio: ^5.3.3
+  sqflite:
+  floor: ^1.4.2
   youtube_player_flutter: ^8.1.2
   simple_animations: ^5.0.2
   cached_network_image: ^3.3.0
   intl: 0.17.0
   bloc_concurrency: ^0.2.2
+  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  floor_generator: ^1.4.2
+  build_runner: ^2.1.2
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -70,6 +75,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/movie-background.jpg
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

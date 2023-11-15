@@ -23,6 +23,15 @@ if (flutterVersionName == null) {
 }
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'test_key'
+            keyPassword 'test_alias_password'
+            storeFile file("$rootDir/demo.keystore")
+            storePassword 'test_key_password'
+        }
+    }
+
     namespace "com.anees4ever.flutter.the_movies"
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
@@ -45,7 +54,7 @@ android {
         applicationId "com.anees4ever.flutter.the_movies"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 20
+        minSdkVersion 19
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -56,6 +65,10 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+        }
+
+        debug {
+            signingConfig signingConfigs.config
         }
     }
 }

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:the_movies/app/widgets/buttons.dart';
 import 'package:the_movies/app/widgets/error_page.dart';
-import 'package:the_movies/features/movies/model/movie_details_model.dart';
+import 'package:the_movies/features/movies/model/movie_data_model.dart';
 import 'package:the_movies/features/movies/model/movie_videos_model.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class MovieTrailerPlayerPage extends StatefulWidget {
   static const String routeName = "/movies/trailer";
-  final MovieDetailsModel movieDetails;
-  const MovieTrailerPlayerPage({super.key, required this.movieDetails});
+  final MovieInfo movieInfo;
+  const MovieTrailerPlayerPage({super.key, required this.movieInfo});
 
   @override
   State<MovieTrailerPlayerPage> createState() => _MovieTrailerPlayerPageState();
@@ -20,11 +20,10 @@ class _MovieTrailerPlayerPageState extends State<MovieTrailerPlayerPage> {
   String videoId = "";
   @override
   void initState() {
-    videoId = widget.movieDetails.movieVideos.isEmpty
-        ? ""
-        : widget.movieDetails.movieVideos[0].key;
-    if (widget.movieDetails.movieVideos.isNotEmpty) {
-      for (MovieVideosModel video in widget.movieDetails.movieVideos) {
+    videoId =
+        widget.movieInfo.videos.isEmpty ? "" : widget.movieInfo.videos[0].key;
+    if (widget.movieInfo.videos.isNotEmpty) {
+      for (MovieVideos video in widget.movieInfo.videos) {
         if (video.type.toLowerCase().contains("trailer")) {
           videoId = video.key;
           break;
@@ -78,9 +77,10 @@ class _MovieTrailerPlayerPageState extends State<MovieTrailerPlayerPage> {
   @override
   Widget build(BuildContext context) {
     if (videoId.isEmpty) {
-      return const ErrorPage(
-        title: "No Trailer Video Found...",
-        error: "No Trailer video found in the response.",
+      return ErrorPage(
+        title: "No Trailer Video!",
+        error:
+            "No Trailer video found for the movie ${widget.movieInfo.data.title}.",
       );
     }
     return YoutubePlayerBuilder(

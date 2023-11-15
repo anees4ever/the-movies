@@ -6,9 +6,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:the_movies/app/api/api.dart';
 import 'package:the_movies/app/theme/colors.dart';
 import 'package:the_movies/app/theme/styles.dart';
-import 'package:the_movies/app/widgets/fade_animation.dart';
+import 'package:the_movies/app/widgets/error_page.dart';
 import 'package:the_movies/app/widgets/image.dart';
+import 'package:the_movies/app/widgets/shimmer_skeleton.dart';
 import 'package:the_movies/features/movies/bloc/movies_bloc.dart';
+import 'package:the_movies/features/movies/model/genres_model.dart';
+import 'package:the_movies/features/movies/model/movie_genres_model.dart';
 import 'package:the_movies/features/movies/ui/movie_details.dart';
 
 class MoviesSearchPage extends StatefulWidget {
@@ -69,7 +72,12 @@ class _MoviesSearchPageState extends State<MoviesSearchPage> {
             final MovieSearchSuccessfulState successState =
                 state as MovieSearchSuccessfulState;
             return getSearchResultScafold(successState);
-
+          case MovieSearchErrorState:
+            return const ErrorPage(
+              back: false,
+              title: "No Search results!",
+              error: "Search result failed to show movie results.",
+            );
           case MovieSearchEntryState:
           default:
             return getSearchbarScafold();
@@ -85,12 +93,47 @@ class _MoviesSearchPageState extends State<MoviesSearchPage> {
         automaticallyImplyLeading: false,
         title: const Text(
           "Searching for movies...",
-          style: appBarTitleStyle,
+          style: text16BoldStyle,
         ),
       ),
       extendBody: true,
-      body: const Center(
-        child: CircularProgressIndicator(),
+      body: Shimmer(
+        child: ListView(
+          physics: const NeverScrollableScrollPhysics(),
+          children: List.generate(
+            5,
+            (index) => const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: ShimmerLoading(
+                isLoading: true,
+                child: SizedBox(
+                  height: 120,
+                  child: Row(
+                    children: [
+                      Expanded(flex: 4, child: ShimmerSkeleton()),
+                      SizedBox(width: 16),
+                      Expanded(
+                          flex: 6,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ShimmerSkeleton(height: 22),
+                              SizedBox(height: 8),
+                              ShimmerSkeleton(height: 22),
+                            ],
+                          )),
+                      SizedBox(width: 4),
+                      ShimmerSkeleton(
+                        height: 32,
+                        width: 32,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -146,8 +189,7 @@ class _MoviesSearchPageState extends State<MoviesSearchPage> {
       ),
       extendBody: true,
       body: const Center(
-        child: Text("Search for your favorite movies.",
-            style: searchMovieNameStyle),
+        child: Text("Search for your favorite movies.", style: text16BoldStyle),
       ),
     );
   }
@@ -157,7 +199,7 @@ class _MoviesSearchPageState extends State<MoviesSearchPage> {
       appBar: AppBar(
         title: Text(
           "${successState.movies.length} Results Found",
-          style: appBarTitleStyle,
+          style: text16BoldStyle,
         ),
         leading: IconButton(
           icon: const Icon(
@@ -177,59 +219,69 @@ class _MoviesSearchPageState extends State<MoviesSearchPage> {
         child: ListView.builder(
           itemCount: successState.movies.length,
           itemBuilder: (context, index) {
-            return FadeAnimation(
-              delay: (index + 1) * 10,
-              child: InkWell(
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    MovieDetailsPage.routeName,
-                    arguments: successState.movies[index],
-                  );
-                },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 5,
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0)),
-                              color: colorAppBackground,
-                              shape: BoxShape.rectangle,
-                            ),
-                            child: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(8.0)),
-                              child: getNetworkImage(
-                                      urlTMdbImagesW500,
-                                      successState
-                                          .movies[index].backdropPath) ??
-                                  getNoImage(),
-                            ),
+            return InkWell(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  MovieDetailsPage.routeName,
+                  arguments: successState.movies[index],
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(8.0)),
+                            color: colorAppBackground,
+                            shape: BoxShape.rectangle,
+                          ),
+                          child: ClipRRect(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(8.0)),
+                            child: getNetworkImage(
+                                    urlTMdbImagesW500,
+                                    successState
+                                        .movies[index].data.backdropPath) ??
+                                getNoImage(),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 5,
-                        child: Text(
-                          successState.movies[index].title,
-                          style: searchMovieNameStyle,
-                        ),
-                      ),
-                      const Icon(
-                        Icons.more_horiz_outlined,
-                        color: colorSecondary,
-                        size: 32,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                        flex: 6,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              successState.movies[index].data.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: text16BoldStyle,
+                            ),
+                            Text(
+                              getGenreNameFromIds(
+                                  successState.movies[index].genres,
+                                  successState.movies[index].genresMaster),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: text12TintedStyle,
+                            ),
+                          ],
+                        )),
+                    const Icon(
+                      Icons.more_horiz_outlined,
+                      color: colorSecondary,
+                      size: 32,
+                    ),
+                  ],
                 ),
               ),
             );
@@ -237,5 +289,16 @@ class _MoviesSearchPageState extends State<MoviesSearchPage> {
         ),
       ),
     );
+  }
+
+  String getGenreNameFromIds(List<MovieGenres> genreIds, List<Genres> genres) {
+    String names = "";
+    for (var movieGenre in genreIds) {
+      Genres? genre = genres
+          .where((element) => element.id == movieGenre.genreId)
+          .firstOrNull;
+      names += genre == null ? "" : (names.isEmpty ? "" : ", ") + genre.name;
+    }
+    return names;
   }
 }

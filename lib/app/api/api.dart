@@ -12,25 +12,28 @@ const urlTMdbImagesW500 = 'https://image.tmdb.org/t/p/w500/';
 final Dio dio = Dio();
 
 class ApiCalls {
-  static String apiSufix = '?api_key=$apiKeyTMDB';
   static post(String url, Map<String, dynamic> data) async {
-    return await dio.post(url + apiSufix,
-        data: data,
-        options: Options(
-          headers: {
-            Headers.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer $apiTokenTMDB",
-          },
-        ));
+    return await dio.post(
+      url,
+      data: data,
+      options: Options(
+        headers: {
+          Headers.acceptHeader: "application/json",
+          HttpHeaders.authorizationHeader: "Bearer $apiTokenTMDB",
+        },
+      ),
+    );
   }
 
   static get(String url) async {
-    return await dio.get(url,
-        options: Options(
-          headers: {
-            Headers.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer $apiTokenTMDB",
-          },
-        ));
+    return await dio.get(
+      url,
+      options: Options(
+        headers: {
+          Headers.acceptHeader: "application/json",
+          HttpHeaders.authorizationHeader: "Bearer $apiTokenTMDB",
+        },
+      ),
+    );
   }
 }

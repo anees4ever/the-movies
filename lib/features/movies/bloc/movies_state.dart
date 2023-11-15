@@ -10,7 +10,7 @@ class MoviesFetchingLoadingState extends MoviesState {}
 class MoviesFetchingErrorState extends MoviesState {}
 
 class MoviesFetchingSuccessfulState extends MoviesState {
-  final List<MoviesModel> movies;
+  final List<MovieInfo> movies;
   MoviesFetchingSuccessfulState({
     required this.movies,
   });
@@ -21,11 +21,9 @@ class MovieDetailsFetchingLoadingState extends MoviesState {}
 class MovieDetailsFetchingErrorState extends MoviesState {}
 
 class MovieDetailsFetchingSuccessfulState extends MoviesState {
-  final MovieDetailsModel movieDetails;
-  final ImageListData movieImageList;
+  final MovieInfo movieInfo;
   MovieDetailsFetchingSuccessfulState({
-    required this.movieDetails,
-    required this.movieImageList,
+    required this.movieInfo,
   });
 }
 
@@ -36,7 +34,7 @@ class MovieSearchLoadingState extends MoviesState {}
 class MovieSearchErrorState extends MoviesState {}
 
 class MovieSearchSuccessfulState extends MoviesState {
-  final List<MoviesModel> movies;
+  final List<MovieInfo> movies;
   MovieSearchSuccessfulState({
     required this.movies,
   });

@@ -8,7 +8,7 @@ class ThemeClass {
         appBarTheme: const AppBarTheme(
           color: colorAppbar,
           foregroundColor: colorAppbar,
-          titleTextStyle: appBarTitleStyle,
+          titleTextStyle: text16BoldStyle,
           iconTheme: IconThemeData(
             color: textColor,
             size: 32,
@@ -27,8 +27,8 @@ class ThemeClass {
           selectedItemColor: colorAppBackground,
           unselectedItemColor: colorIcons,
           backgroundColor: colorNavBar,
-          selectedLabelStyle: navBarTextStyle,
-          unselectedLabelStyle: navBarTextStyle,
+          selectedLabelStyle: text10RobotoStyle,
+          unselectedLabelStyle: text10RobotoStyle,
         ),
       );
 }

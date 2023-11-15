@@ -24,14 +24,20 @@ Widget? getNetworkImage(String path, String url,
                   progressWidget ??
                   AspectRatio(
                     aspectRatio: 1,
-                    child: Center(
-                      child: SizedBox(
-                        height: 42,
-                        width: 42,
-                        child: CircularProgressIndicator(
-                          value: downloadProgress.progress,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        getNoImage(),
+                        Center(
+                          child: SizedBox(
+                            height: 42,
+                            width: 42,
+                            child: CircularProgressIndicator(
+                              value: downloadProgress.progress,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
           errorWidget: (context, url, error) => errorWidget,

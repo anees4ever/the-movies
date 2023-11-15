@@ -7,6 +7,7 @@ getPrimaryButton(
     IconData? icon,
     double? width,
     double height = 48,
+    bool isBig = false,
     void Function()? onPressed}) {
   return SizedBox(
     width: width,
@@ -31,12 +32,12 @@ getPrimaryButton(
           if (icon != null)
             Icon(
               icon,
-              size: 14,
+              size: isBig ? 20 : 14,
               color: textColorDark,
             ),
           Text(
             title,
-            style: buttonPrimaryTextStyle,
+            style: isBig ? text16BoldDarkStyle : text14BoldDarkStyle,
           ),
         ],
       ),
@@ -49,6 +50,7 @@ getSecondaryButton(
     IconData? icon,
     double? width,
     double height = 48,
+    bool isBig = false,
     void Function()? onPressed}) {
   return SizedBox(
     width: width,
@@ -72,13 +74,13 @@ getSecondaryButton(
           if (icon != null)
             Icon(
               icon,
-              size: 14,
+              size: isBig ? 20 : 14,
               color: textColorDark,
             ),
           if (icon != null) const SizedBox(width: 6.0),
           Text(
             title,
-            style: buttonSecondaryTextStyle,
+            style: isBig ? text16BoldDarkStyle : text14BoldDarkStyle,
           ),
         ],
       ),

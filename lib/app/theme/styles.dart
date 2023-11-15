@@ -1,70 +1,92 @@
 import 'package:flutter/material.dart';
 import 'package:the_movies/app/theme/colors.dart';
 
-const appBarTitleStyle = TextStyle(
+const text6BoldStyle = TextStyle(
   color: textColor,
   fontWeight: FontWeight.bold,
-  fontSize: 22,
+  fontSize: 6,
+);
+const text10Style = TextStyle(
+  color: textColor,
+  fontSize: 10,
+);
+const text10TintedStyle = TextStyle(
+  color: colorIcons,
+  fontSize: 10,
+);
+const text12BoldStyle = TextStyle(
+  color: textColor,
+  fontWeight: FontWeight.bold,
+  fontSize: 12,
 );
 
-const appBarSubTitleStyle = TextStyle(
+const text12Style = TextStyle(
+  color: textColor,
+  fontSize: 12,
+);
+const text12TintedStyle = TextStyle(
+  color: colorIcons,
+  fontSize: 12,
+);
+
+const text12DarkStyle = TextStyle(
+  color: textColorDark,
+  fontSize: 12,
+);
+
+const text12BlueStyle = TextStyle(
+  color: colorSecondary,
+  fontSize: 12,
+);
+
+const text14Style = TextStyle(
+  color: textColor,
+  fontSize: 14,
+);
+const text14BoldStyle = TextStyle(
+  color: textColor,
+  fontWeight: FontWeight.bold,
+  fontSize: 14,
+);
+const text14BoldDarkStyle = TextStyle(
   color: textColorDark,
   fontWeight: FontWeight.bold,
-  fontSize: 22,
+  fontSize: 14,
 );
 
-const movieNameStyle = TextStyle(
+const text16BoldStyle = TextStyle(
+  color: textColor,
+  fontWeight: FontWeight.bold,
+  fontSize: 16,
+);
+
+const text16DarkStyle = TextStyle(
+  color: textColorDark,
+  fontSize: 16,
+);
+const text16BoldDarkStyle = TextStyle(
   color: textColorDark,
   fontWeight: FontWeight.bold,
-  fontSize: 24,
+  fontSize: 16,
 );
-
-const upcomingMovieNameStyle = TextStyle(
+const text16RedStyle = TextStyle(
+  color: textColor,
+  fontSize: 16,
+);
+const text18BoldDarkStyle = TextStyle(
   color: textColorDark,
+  fontWeight: FontWeight.bold,
   fontSize: 18,
 );
 
-const searchMovieNameStyle = TextStyle(
-  color: textColor,
-  fontWeight: FontWeight.bold,
-  fontSize: 20,
-);
-
-const navBarTextStyle = TextStyle(
+const text10RobotoStyle = TextStyle(
   fontFamily: 'Roboto',
   fontSize: 10,
 );
 
-const chipTextStyle = TextStyle(
-  color: textColorDark,
-  fontFamily: 'Roboto',
-  fontSize: 18,
-);
-
-const overviewTextStyle = TextStyle(
-  color: colorIcons,
-  fontSize: 20,
-);
-
-const errorTitleTextStyle = TextStyle(
+const text20RobotoRedStyle = TextStyle(
   color: textColorError,
   fontFamily: 'Roboto',
   fontWeight: FontWeight.bold,
-  fontSize: 24,
-);
-const errorDetailsTextStyle = TextStyle(
-  color: textColor,
-  fontSize: 16,
-);
-
-const buttonPrimaryTextStyle = TextStyle(
-  color: textColorDark,
-  fontWeight: FontWeight.bold,
-  fontSize: 16,
-);
-
-const buttonSecondaryTextStyle = TextStyle(
-  color: textColorDark,
-  fontWeight: FontWeight.bold,
-  fontSize: 16,
+  fontSize: 20,
 );
